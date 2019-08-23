@@ -58,6 +58,7 @@ void setup()
   Wire.begin();
   tof.init();
   tof.setTimeout(500);
+  tof.startContinuous(20);
 
   // Setup code for sonar
   pinMode(sonarTrigPin, OUTPUT);
@@ -116,7 +117,7 @@ void loop()
 
 uint16_t read_tof(){
   // Get range in millimeters
-  uint16_t tof_mm = tof.readRangeSingleMillimeters();
+  uint16_t tof_mm = tof.readRangeContinuousMillimeters();
   return tof_mm;
 }
 uint16_t read_sonar(){
