@@ -1,18 +1,32 @@
+
 /*
  * SD card attached to SPI bus as follows:
  ** MOSI - pin 11
  ** MISO - pin 12
  ** CLK - pin 13
  ** CS - pin 4
+
+ * ToF sensor attached to following pins:
+ ** SDA 
+ ** SCL
+ ** 3.3V
+ ** GND
  */
 
-#include <SPI.h>
-#include <SD.h>
+#include <SPI.h> // SD
+#include <SD.h> // SD
+#include <Wire.h> // I2C - ToF
+#include <VL53L0X.h>// I2C - ToF
 
+// Constants
 const int chipSelect = 4;
 
-int read_tof();
+// Functions
+uint16_t read_tof();
 int read_sonar();
+
+// Sensors
+VL53L0X tof;
 
 void setup()
 {
@@ -31,7 +45,10 @@ void setup()
   Serial.println("card initialized.");
   //////////////////// SD card setup end
 
-  // TODO: write setup code for ToF sensor
+  // Setup code for ToF sensor
+  Wire.begin();
+  tof.init();
+  tof.setTimeout(500);
 
   // TODO: write setup code for sonar
   
@@ -46,7 +63,7 @@ void loop()
   unsigned long current_time = millis();
   
   // Read sensor data
-  int tof_reading = read_tof();
+  uint16_t tof_reading = read_tof();
   int sonar_reading = read_sonar();
 
   // Create comma-delimited string from sensor data
@@ -87,10 +104,10 @@ void loop()
   //////////////////// SD card logging end
 }
 
-int read_tof(){
-  // TODO: write code for reading ToF data
-
-  return 0;
+uint16_t read_tof(){
+  // Get range in millimeters
+  uint16_t tof_mm = tof.readRangeSingleMillimeters();
+  return tof_mm;
 }
 int read_sonar(){
   // TODO: write code for reading sonar data
