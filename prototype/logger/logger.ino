@@ -5,11 +5,17 @@
  ** MISO - pin 12
  ** CLK - pin 13
  ** CS - pin 4
-
- * ToF sensor attached to following pins:
+ *
+ * ToF (VL53L0X) attached to following pins:
  ** SDA 
  ** SCL
  ** 3.3V
+ ** GND
+ * 
+ * Sonar (HC-SR04) attached to following pins:
+ ** VCC - 5V
+ ** Trig - pin 3
+ ** Echo - pin 2
  ** GND
  */
 
@@ -20,10 +26,13 @@
 
 // Constants
 const int chipSelect = 4;
+const int sonarTrigPin = 3;
+const int sonarEchoPin = 2;
+const unsigned long sonarTimeout = 30000; // microseconds, 0.03s=>max range 5.1m
 
 // Functions
 uint16_t read_tof();
-int read_sonar();
+uint16_t read_sonar();
 
 // Sensors
 VL53L0X tof;
@@ -50,8 +59,9 @@ void setup()
   tof.init();
   tof.setTimeout(500);
 
-  // TODO: write setup code for sonar
-  
+  // Setup code for sonar
+  pinMode(sonarTrigPin, OUTPUT);
+  pinMode(sonarEchoPin, INPUT); 
 }
 
 void loop()
@@ -64,7 +74,7 @@ void loop()
   
   // Read sensor data
   uint16_t tof_reading = read_tof();
-  int sonar_reading = read_sonar();
+  uint16_t sonar_reading = read_sonar();
 
   // Create comma-delimited string from sensor data
   dataString += String(current_time);
@@ -95,7 +105,7 @@ void loop()
     dataFile.println(dataString);
     dataFile.close();
     // print to the serial port too:
-    Serial.println(dataString);
+    //Serial.println(dataString);
   }
   // if the file isn't open, pop up an error:
   else {
@@ -109,9 +119,24 @@ uint16_t read_tof(){
   uint16_t tof_mm = tof.readRangeSingleMillimeters();
   return tof_mm;
 }
-int read_sonar(){
-  // TODO: write code for reading sonar data
+uint16_t read_sonar(){
+  // Get range in millimeters
+
+  // Send pulse (duration: 10 microseconds)
+  digitalWrite(sonarTrigPin, LOW); 
+  delayMicroseconds(2); 
+  digitalWrite(sonarTrigPin, HIGH); //超音波を出力
+  delayMicroseconds(10);
+  digitalWrite(sonarTrigPin, LOW);
+
+  // Read pulse and calculate distance
+  double duration = pulseIn(sonarEchoPin, HIGH, sonarTimeout); //センサからの入力
+  uint16_t distance = 65535; // distance in mm
+  if (duration > 0) {
+    duration = duration/2; // duration for one-way in microseconds
+    distance = (uint16_t)(duration/1000000*340*1000); // distance in mm (speed of sound: 340m/s)
+  }
   
-  return 0;
+  return distance;
 }
 
