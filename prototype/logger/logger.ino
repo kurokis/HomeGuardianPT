@@ -15,7 +15,7 @@
  * Sonar (HC-SR04) attached to following pins:
  ** VCC - 5V
  ** Trig - pin 3
- ** Echo - pin 2
+ ** Echo - pin 9
  ** GND
  */
 
@@ -27,7 +27,11 @@
 // Constants
 const int chipSelect = 4;
 const int sonarTrigPin = 3;
-const int sonarEchoPin = 2;
+const int sonarEchoPin = 9;
+//const int switchPin = 2;
+//const int motorPin = 5;
+//const int servoPin = 6;
+//const int LEDPin = 8;
 const unsigned long sonarTimeout = 30000; // microseconds, 0.03s=>max range 5.1m
 
 // Functions
