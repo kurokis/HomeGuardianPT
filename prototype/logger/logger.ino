@@ -17,6 +17,17 @@
  ** Trig - pin 3
  ** Echo - pin 9
  ** GND
+ * 
+ * DC motor driver
+ * PWMA - pin 5
+ * VCC
+ * VM - motor voltage
+ * GND
+ * 
+ * Servo motor for rudder
+ * signal (yellow) - pin 6
+ * VCC 5V
+ * GND
  */
 
 #include <SPI.h> // SD
@@ -24,15 +35,19 @@
 #include <Wire.h> // I2C - ToF
 #include <VL53L0X.h>// I2C - ToF
 
-// Constants
+// Constants: pins
 const int chipSelect = 4;
 const int sonarTrigPin = 3;
 const int sonarEchoPin = 9;
 //const int switchPin = 2;
-//const int motorPin = 5;
-//const int servoPin = 6;
+const int DCmotor_pin = 5; //to DC motor driver
+const int servo_pin = 6; // signal pin of rudder servo
 //const int LEDPin = 8;
 const unsigned long sonarTimeout = 30000; // microseconds, 0.03s=>max range 5.1m
+
+// Variables: control parameters
+int rudder_angle = 90; //0~180 90= 0deg(center), 0=left max, 180=right max
+int motor_velocity = 100; // 0~255
 
 // Functions
 uint16_t read_tof();
@@ -40,6 +55,9 @@ uint16_t read_sonar();
 
 // Sensors
 VL53L0X tof;
+
+// Servos
+Servo rudder_servo;
 
 void setup()
 {
@@ -67,6 +85,9 @@ void setup()
   // Setup code for sonar
   pinMode(sonarTrigPin, OUTPUT);
   pinMode(sonarEchoPin, INPUT); 
+
+  // Setup code for servo
+  rudder_servo.attach(servo_pin);
 }
 
 void loop()
@@ -99,6 +120,13 @@ void loop()
     }
   }
   */
+
+  // Steer
+  rudder_servo.write(rudder_angle);
+
+  // Throttle
+  analogWrite(DCmotor_pin, motor_velocity);
+  
   
   //////////////////// SD card logging begin
   // open the file. note that only one file can be open at a time,
