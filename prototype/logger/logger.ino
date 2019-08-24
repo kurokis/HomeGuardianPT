@@ -1,6 +1,4 @@
 
-
-
 /*
  * SD card attached to SPI bus as follows:
  ** MOSI - pin 11
@@ -45,7 +43,7 @@ const int sonarEchoPin = 9;
 const int switchPin = 2;
 const int DCmotor_pin = 5; //to DC motor driver
 const int servo_pin = 6; // signal pin of rudder servo
-//const int LEDPin = 8;
+const int LEDPin = 8;
 const unsigned long sonarTimeout = 30000; // microseconds, 0.03s=>max range 5.1m
 
 // Variables: control parameters
@@ -92,6 +90,9 @@ void setup()
 
   // Setup code for servo
   rudder_servo.attach(servo_pin);
+
+  // Setup code for LED
+  pinMode(LEDPin, OUTPUT);
 }
 
 void loop()
@@ -132,6 +133,9 @@ void loop()
   int motor_velocity = 0;
   if(read_switch()){
     motor_velocity = fwd_motor_velocity;
+    digitalWrite(LEDPin, HIGH); // LED ON
+  }else{
+    digitalWrite(LEDPin, LOW); // LED OFF
   }
   analogWrite(DCmotor_pin, motor_velocity); // run motor
   
