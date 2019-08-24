@@ -1,4 +1,6 @@
 
+
+
 /*
  * SD card attached to SPI bus as follows:
  ** MOSI - pin 11
@@ -34,6 +36,7 @@
 #include <SD.h> // SD
 #include <Wire.h> // I2C - ToF
 #include <VL53L0X.h>// I2C - ToF
+#include <Servo.h> // Servo for steering
 
 // Constants: pins
 const int chipSelect = 4;
