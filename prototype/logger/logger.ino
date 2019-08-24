@@ -42,7 +42,7 @@
 const int chipSelect = 4;
 const int sonarTrigPin = 3;
 const int sonarEchoPin = 9;
-//const int switchPin = 2;
+const int switchPin = 2;
 const int DCmotor_pin = 5; //to DC motor driver
 const int servo_pin = 6; // signal pin of rudder servo
 //const int LEDPin = 8;
@@ -50,11 +50,12 @@ const unsigned long sonarTimeout = 30000; // microseconds, 0.03s=>max range 5.1m
 
 // Variables: control parameters
 int rudder_angle = 90; //0~180 90= 0deg(center), 0=left max, 180=right max
-int motor_velocity = 100; // 0~255
+const int fwd_motor_velocity = 100; // 0~255
 
 // Functions
 uint16_t read_tof();
 uint16_t read_sonar();
+uint8_t read_switch(); // returns 1 if ON, 0 if OFF
 
 // Sensors
 VL53L0X tof;
@@ -128,8 +129,11 @@ void loop()
   rudder_servo.write(rudder_angle);
 
   // Throttle
-  analogWrite(DCmotor_pin, motor_velocity);
-  
+  int motor_velocity = 0;
+  if(read_switch()){
+    motor_velocity = fwd_motor_velocity;
+  }
+  analogWrite(DCmotor_pin, motor_velocity); // run motor
   
   //////////////////// SD card logging begin
   // open the file. note that only one file can be open at a time,
@@ -174,5 +178,16 @@ uint16_t read_sonar(){
   }
   
   return distance;
+}
+uint8_t read_switch(){
+  uint8_t state = 0; // switch state
+
+  // Read state from switch pin
+  int reading = digitalRead(switchPin);
+  if(reading == HIGH){
+    state = 1;
+  }
+
+  return state; // 0 for OFF, 1 for ON
 }
 
