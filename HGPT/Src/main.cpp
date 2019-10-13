@@ -23,7 +23,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "led.hpp"
+#include "motor.hpp"
+#include "encoder.hpp"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -70,7 +72,12 @@ static void MX_TIM7_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+LED led(GPIOA, GPIO_PIN_10);
+Motor mtrl(&htim1, TIM_CHANNEL_1, GPIOC, GPIO_PIN_6, GPIOC, GPIO_PIN_7, GPIOC, GPIO_PIN_2);
+Motor mtrr(&htim1, TIM_CHANNEL_2, GPIOC, GPIO_PIN_8, GPIOC, GPIO_PIN_9, GPIOC, GPIO_PIN_2);
+Encoder encl(&htim2, TIM_CHANNEL_ALL, TIM2);
+Encoder encr(&htim3, TIM_CHANNEL_ALL, TIM3);
+bool ready = false;
 /* USER CODE END 0 */
 
 /**
@@ -109,6 +116,20 @@ int main(void)
   MX_USART2_UART_Init();
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
+
+  // Start left motor
+  mtrl.start();
+  mtrl.setPWMDuty(0);
+
+  // Start right motor
+  mtrr.start();
+  mtrr.setPWMDuty(0);
+
+  // Start timer interrupt
+  HAL_TIM_Base_Start_IT(&htim7);
+
+  // Set status to ready
+  ready = true;
 
   /* USER CODE END 2 */
 
@@ -512,7 +533,26 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void Process_100Hz(){
+  static float direction = 1;
+  static float duty = 0;
+  if(ready){
+	  // Set new duty
+	  if(duty>0.2) direction = -1;
+	  if(duty<-0.2) direction = 1;
+	  duty += direction*0.002;
 
+	  // Run left motor
+	  mtrl.setPWMDuty(duty);
+
+	  // Toggle LED
+	  if(duty>=0){
+		  led.on();
+	  }else{
+		  led.off();
+	  }
+  }
+}
 /* USER CODE END 4 */
 
 /**
