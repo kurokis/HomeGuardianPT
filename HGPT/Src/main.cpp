@@ -26,6 +26,7 @@
 #include "led.hpp"
 #include "motor.hpp"
 #include "encoder.hpp"
+#include "xprintf.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -78,6 +79,25 @@ Motor mtrr(&htim1, TIM_CHANNEL_2, GPIOC, GPIO_PIN_8, GPIOC, GPIO_PIN_9, GPIOC, G
 Encoder encl(&htim2, TIM_CHANNEL_ALL, TIM2);
 Encoder encr(&htim3, TIM_CHANNEL_ALL, TIM3);
 bool ready = false;
+
+// Function definitions for xprintf
+uint8_t uart_getc(void){
+	uint8_t c = 0;
+	char buf[1];
+	HAL_UART_Receive(&huart2, (uint8_t *)buf, sizeof(buf), 0xFFFF);
+	c = buf[0];
+	return c;
+}
+void uart_putc(uint8_t c){
+	char buf[1];
+	buf[0] = c;
+	HAL_UART_Transmit(&huart2, (uint8_t *)buf, sizeof(buf), 0xFFFF);
+}
+void uart_puts(char *str){
+	while(*str){
+		uart_putc(*str++);
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -87,7 +107,8 @@ bool ready = false;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+  // Initialize xprintf
+  xdev_out(uart_putc);
   /* USER CODE END 1 */
   
 
@@ -130,6 +151,9 @@ int main(void)
 
   // Set status to ready
   ready = true;
+
+  // Notify initialization is complete
+  xprintf("Initialization complete\n");
 
   /* USER CODE END 2 */
 
