@@ -2,9 +2,61 @@
 
 ## CubeMXの設定
 
+### 1. Pinout & Configuration
+
+**SYS**
+
+JTAG (5 pins)
+
+System Wake-Up 0
+
+**TIM1**
+
+- Channel1: PWM Generation CH1
+- Channel2: PWM Generation CH2
+- Prescaler: 89
+- Counter Period: 999
+
+**TIM2**
+
+- Combined Channels: Encoder Mode
+- Counter Period: 65535
+
+**TIM3**
+
+- Combined Channels: Encoder Mode
+- Counter Period: 65535
+
+**TIM7**
+
+- Activated
+
+**I2C1**
+
+- I2C: I2C
+
+**USART2**
+
+- Mode: Asynchronous
+- Baud Rate: 115200
+
+### 2. Clock Configuration
+
+HCLKが180MHzとなるように設定
+
+- PLLM: /8
+- PLLN: x180
+- APB1 Prescaler: /4
+- APB2 Prescaler: /4
+
+### 3. Project Manager
+
+
 Project ManagerタブのFirmware Package Name and Versionで以下を選択する。
 
-STM32Cube FW_F4 V1.24.0
+- Toolchain / IDE: SW4STM32
+- User latest available version (STM32Cube FW_F4 V1.24.1)
+- Use Default Firmware Location
 
 ## SW4STM32の設定
 
