@@ -1,3 +1,4 @@
+#pragma once
 /*
  * mux.hpp
  *

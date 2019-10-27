@@ -28,6 +28,8 @@
 #include "encoder.hpp"
 #include"xprintf.h"
 #include "mux.hpp"
+#include "algo.hpp"
+#include "transition.hpp"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -200,6 +202,8 @@ Motor mtrl(&htim1, TIM_CHANNEL_1, GPIOC, GPIO_PIN_6, GPIOC, GPIO_PIN_7, GPIOC, G
 Motor mtrr(&htim1, TIM_CHANNEL_2, GPIOC, GPIO_PIN_8, GPIOC, GPIO_PIN_9, GPIOC, GPIO_PIN_2);
 Encoder encl(&htim2, TIM_CHANNEL_ALL, TIM2);
 Encoder encr(&htim3, TIM_CHANNEL_ALL, TIM3);
+ALGO *algo;
+TRANS *trans;
 bool ready = false;
 
 // Function definitions for xprintf
@@ -230,7 +234,8 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
  xdev_out(uart_putc);
-
+ algo = new ALGO();
+ trans = new TRANS();
   /* USER CODE END 1 */
   
 
@@ -274,6 +279,11 @@ int main(void)
   encr.start();
 //  VL53L0X_Address_Test();
 // Vl53L0X_Test();
+
+  // Start algorithm and transition
+  trans->init();
+  algo->init();
+
   xprintf("Initialization complete\n");
   ready=true;
   /* USER CODE END 2 */
@@ -716,6 +726,12 @@ void Process_100Hz(){
 	  xprintf("rot,dist=");
 	  xprintf("%d,%d\n",rotl,dist);
 
+	  algo->calcTargetVelDR(&encl, &encr);
+	  //motLF->setTargetVel(clientID, algo->tarVelL);
+	  //motLR->setTargetVel(clientID, algo->tarVelL);
+	  //motRF->setTargetVel(clientID, algo->tarVelR);
+	  //motRR->setTargetVel(clientID, algo->tarVelR);
+	  trans->takeTrans(algo->pos[0], algo->pos[1], algo);
   }
 
 }
