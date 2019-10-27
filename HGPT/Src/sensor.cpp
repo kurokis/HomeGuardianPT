@@ -17,8 +17,14 @@ void Sensor::requestSingleMeasurement(){
 }
 
 uint16_t Sensor::readSingleMeasurement(){
-	//uint8_t val;
-	//val = read_byte_data_at(VL53L0X_REG_RESULT_RANGE_STATUS);
+	// requestSingleMeasurement must be called at least once
+	// Otherwise isAvailable() will never become true
+	static bool isFirstTime = true;
+	if(isFirstTime){
+		requestSingleMeasurement();
+		isFirstTime = false;
+	}
+
 	if (isAvailable())
 	{
 		// Store new data

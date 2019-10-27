@@ -209,7 +209,15 @@ Motor mtrr(&htim1, TIM_CHANNEL_2, GPIOC, GPIO_PIN_8, GPIOC, GPIO_PIN_9, GPIOC, G
 Encoder encl(&htim2, TIM_CHANNEL_ALL, TIM2);
 Encoder encr(&htim3, TIM_CHANNEL_ALL, TIM3);
 mux myMux(GPIOC, GPIO_PIN_5, GPIOB, GPIO_PIN_13, GPIOB, GPIO_PIN_14, GPIOB, GPIO_PIN_15);
-Sensor senLR(&hi2c1, &myMux, 0);
+Sensor senFC(&hi2c1, &myMux, 0);
+Sensor senFL(&hi2c1, &myMux, 1);
+Sensor senLF(&hi2c1, &myMux, 2);
+Sensor senLR(&hi2c1, &myMux, 3);
+Sensor senRR(&hi2c1, &myMux, 4);
+Sensor senRF(&hi2c1, &myMux, 5);
+Sensor senFR(&hi2c1, &myMux, 6);
+
+
 bool ready = false;
 
 // Function definitions for xprintf
