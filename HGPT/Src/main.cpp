@@ -38,17 +38,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-/*
-#define VL53L0X_Address    0x52
-#define VL53L0X_REG_IDENTIFICATION_MODEL_ID         0xc0
-#define VL53L0X_REG_IDENTIFICATION_REVISION_ID      0xc2
-#define VL53L0X_REG_PRE_RANGE_CONFIG_VCSEL_PERIOD   0x50
-#define VL53L0X_REG_FINAL_RANGE_CONFIG_VCSEL_PERIOD 0x70
-#define VL53L0X_REG_SYSRANGE_START                  0x00
-#define VL53L0X_REG_RESULT_INTERRUPT_STATUS         0x13
-#define VL53L0X_REG_RESULT_RANGE_STATUS             0x14
-#define	SYSTEM_INTERMEASUREMENT_PERIOD  0x04
-*/
 
 /* USER CODE END PD */
 
@@ -68,124 +57,7 @@ TIM_HandleTypeDef htim7;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-/*
-//vl53l0x function
-uint8_t buf[16];
 
-
-uint16_t VL53L0X_decode_vcsel_period(short vcsel_period_reg) {
-  uint16_t vcsel_period_pclks = (vcsel_period_reg + 1) << 1;
-  return vcsel_period_pclks;
-}
-
-uint16_t convuint16(int lsb, int msb) {
-    return ((msb & 0xFF) << 8) | (lsb & 0xFF);
-}
-
-
-void write_byte_data_at(uint8_t reg, uint8_t data) {
-     uint8_t val[1];
-     val[0]=data;
-     HAL_I2C_Mem_Write(&hi2c1, VL53L0X_Address, reg, I2C_MEMADD_SIZE_8BIT, val, 1, 1000);
-}
-
-void write_32Bit_data_at(uint8_t reg, uint32_t data) {
-     uint8_t val[4];
-     val[0]=((data>>24)&0xFF);
-     val[1]=((data>>16)&0xFF);
-     val[2]=((data>>8)&0xFF);
-     val[3]=data&0xFF;
-     HAL_I2C_Mem_Write(&hi2c1, VL53L0X_Address, reg, I2C_MEMADD_SIZE_8BIT, val, 4, 1000);
-}
-
-uint8_t read_byte_data_at(uint8_t reg) {
-    uint8_t value;
-    HAL_I2C_Mem_Read(&hi2c1, VL53L0X_Address, reg, I2C_MEMADD_SIZE_8BIT, &value, 1, 1000);
-  return value;
-}
-
-void read_block_data_at(uint8_t reg, int sz) {
-    HAL_I2C_Mem_Read(&hi2c1, VL53L0X_Address, reg, I2C_MEMADD_SIZE_8BIT, buf, sz, 1000);
-}
-
-
-
-void Vl53L0X_Test(void){
-
-    uint8_t val1 ;
-//CHKÅ@Param
-      val1 = read_byte_data_at(VL53L0X_REG_IDENTIFICATION_REVISION_ID);
-      xprintf("Revision ID: %d, ",val1);
-
-      val1 = read_byte_data_at(VL53L0X_REG_IDENTIFICATION_MODEL_ID);
-      xprintf("Device ID:  %d \n",val1);
-
-      val1 = read_byte_data_at(VL53L0X_REG_PRE_RANGE_CONFIG_VCSEL_PERIOD);
-     xprintf("PRE_RANGE_CONFIG_VCSEL_PERIOD: %d \n",val1);
-      xprintf(" decode:   %d \n",VL53L0X_decode_vcsel_period(val1));
-
-      val1 = read_byte_data_at(VL53L0X_REG_FINAL_RANGE_CONFIG_VCSEL_PERIOD);
-//      xprintf("FINAL_RANGE_CONFIG_VCSEL_PERIOD: %d \n",val1);
-//      xprintf(" decode:   %d \n",VL53L0X_decode_vcsel_period(val1));
-
-//Init Start
-      write_32Bit_data_at(SYSTEM_INTERMEASUREMENT_PERIOD,20);
-      write_byte_data_at(VL53L0X_REG_SYSRANGE_START, 0x01);
-
-      uint8_t val = 0;
-      int cnt = 0;
-      while (cnt < 100) { // 1 second waiting time max
-          HAL_Delay(10);
-        val = read_byte_data_at(VL53L0X_REG_RESULT_RANGE_STATUS);
-        if (val & 0x01) break;
-        cnt++;
-      }
-    //  if (val & 0x01) xprintf("Ready!! \n"); else xprintf("Not Ready!!");
-
-      read_block_data_at(0x14, 12);
-      uint16_t acnt = convuint16(buf[7], buf[6]);
-      uint16_t scnt = convuint16(buf[9], buf[8]);
-      uint16_t dist = convuint16(buf[11], buf[10]);
-      uint8_t DeviceRangeStatusInternal = ((buf[0] & 0x78) >> 3);
-     // xprintf("ambient count: %d, signal count: %d, distance: %d, status: %d  \n",
-      //        acnt,scnt,dist,DeviceRangeStatusInternal);
-   xprintf("RES: %dÅ@mm  \n",dist);
-
-}
-
-int VL53L0X_read()
-{
-    write_byte_data_at(VL53L0X_REG_SYSRANGE_START, 0x01);
-	while(1)
-	{		HAL_Delay(1);
-
-		uint8_t val = read_byte_data_at(VL53L0X_REG_RESULT_RANGE_STATUS);
-    	if (val & 0x01) break;
-	}
-    read_block_data_at(0x14, 12);
-
-	return       convuint16(buf[11], buf[10]);
-
-}
-
-void get_all_VL53L0X_value(uint16_t dist[7],int sensor_num=7);
-
-uint8_t VL53L0X_Address_Test(void){
-
-     uint8_t tmp[2];
-     HAL_I2C_Mem_Read(&hi2c1, VL53L0X_Address, 0xC1, I2C_MEMADD_SIZE_8BIT, tmp, 1, 100);
-
-     if(tmp[0]==0xAA){
-        xprintf("VL53L0X is Found! \n");
-         return true;
-     }
-     else{
-      xprintf("VL53L0X is NOT Found! ERROR! \n");
-         return false;
-     }
-
-}
-*/
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -282,19 +154,19 @@ int main(void)
   mtrl.start();
   mtrl.setPWMDuty(0);
 
-
   // Start right motor
   mtrr.start();
   mtrr.setPWMDuty(0);
 
-  // Start Encorder
+  // Start Encoder
   encl.start();
   encr.start();
-//  VL53L0X_Address_Test();
-// Vl53L0X_Test();
 
   // Initialize mux
   myMux.init();
+
+  // VL53L0X_Address_Test();
+  // Vl53L0X_Test();
 
   xprintf("Initialization complete\n");
   ready=true;
@@ -305,15 +177,8 @@ int main(void)
   while (1)
   {
     /* USER CODE BEGIN 3 */
-	 /*
-	 uint16_t dist[7];
-	 void get_all_VL53L0X_value(dist,7)
-	 for(int i=0;i<7;++i)
-	 {
-		 xprintf("dist[0]=%d,dist[1]=%d,dist[2]",dist[0]);
-	 }*/
-	  uint16_t dist = senLR.readSingleMeasurement();
-	  xprintf("dist=%d\n",dist);
+	uint16_t dist = senLR.readSingleMeasurement();
+	xprintf("dist=%d\n",dist);
   }
   /* USER CODE END 3 */
 }
@@ -705,52 +570,6 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-/*
-void get_all_VL53L0X_value(uint16_t dist[7],int sensor_num=7)
-{
-	// sending msg to measure distance
-    for(int i=0;i<sensor_num;++i)
-    {
-      myMux.select_channel(i,&hi2c1);
-	  write_byte_data_at(VL53L0X_REG_SYSRANGE_START, 0x01);
-    }
-    bool isCorrect[7];
-    for(int i=0;i<7;++i)
-    {
-    	isCorrect[i]=false;
-
-    }
-    while(true)
-    {
-    for(int i=0;i<sensor_num;++i)
-    {
-    	if(!isCorrect[i])
-    	{
-    		uint8_t val;
-    		val = read_byte_data_at(VL53L0X_REG_RESULT_RANGE_STATUS);
-        	if (val & 0x01)
-        	{
-
-            	read_block_data_at(0x14, 12);
-            	uint16_t dist[i] = convuint16(buf[11], buf[10]);
-            	isCorrect[i]=true;
-        	}
-    	}
-
-    }
-    int sum=0;
-    for( int i=0;i<sensor_num;++i)
-    {
-    	sum+=isCorrect[i];
-    }
-    if(sum==0)
-    	break;
-    }
-
-
-}
-*/
-
 void Process_100Hz(){
   const int sensor_num=7;
   static float direction = 1;
