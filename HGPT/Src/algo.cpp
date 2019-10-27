@@ -10,15 +10,24 @@
 
 //using namespace std;
 
-/*
-void ALGO::calcTargetVelRH(float senFC, float senFL, float senFR, float senLF, float senLR, float senRF, float senRR){
+
+void ALGO::calcTargetVelRH(float senFC_dist, float senFL_dist, float senFR_dist, float senLF_dist, float senLR_dist, float senRF_dist, float senRR_dist){
   float curvature, ratio;
+  const float thres = 440;
+  bool senFC_res, senFL_res, senFR_res, senLF_res, senLR_res, senRF_res, senRR_res;
+  if(senFC_dist < thres){senFC_res = true;}else{senFC_res = false;}
+  if(senFL_dist < thres){senFL_res = true;}else{senFL_res = false;}
+  if(senFR_dist < thres){senFR_res = true;}else{senFR_res = false;}
+  if(senLF_dist < thres){senLF_res = true;}else{senLF_res = false;}
+  if(senLR_dist < thres){senLR_res = true;}else{senLR_res = false;}
+  if(senRF_dist < thres){senRF_res = true;}else{senRF_res = false;}
+  if(senRR_dist < thres){senRR_res = true;}else{senRR_res = false;}
 
   //curvature is positive when turning right
-  if (!senRF->res)
+  if (!senRF_res)
     curvature = 4;
   else
-    curvature = (senRF->dist - senRR->dist) * 40.0 + ((senRF->dist + senRR->dist)-0.35) * 15.0;
+    curvature = (senRF_dist - senRR_dist) * 40.0 + ((senRF_dist + senRR_dist)-0.35) * 15.0;
 
   //ratio = L/R
   if(curvature>0)
@@ -29,12 +38,12 @@ void ALGO::calcTargetVelRH(float senFC, float senFL, float senFR, float senLF, f
   tarVelL = VEL * ratio / (ratio + 1.0);
   tarVelR = VEL - tarVelL;
 
-  if(senFC->res && senFC->dist < 0.2){
-    if(senFL->res && senFL->dist < 0.2 && senFR->res && senFR->dist < 0.2){
+  if(senFC_res && senFC_dist < 0.2){
+    if(senFL_res && senFL_dist < 0.2 && senFR_res && senFR_dist < 0.2){
       tarVelR = - VEL / 2.0;
       tarVelL = - VEL / 2.0;
     }
-    else if(!senLR->res || senLR->dist > senRR->dist){
+    else if(!senLR_res || senLR_dist > senRR_dist){
       tarVelL = 10.0;
       tarVelR = VEL - tarVelL;
     }
@@ -44,7 +53,7 @@ void ALGO::calcTargetVelRH(float senFC, float senFL, float senFR, float senLF, f
     }
   }
 }
-*/
+
 
 void ALGO::calcTargetVelDR(Encoder *encl, Encoder *encr){
 

@@ -13,7 +13,7 @@ class ALGO{
   float tarPos[2];
   void init();
 
-  //void calcTargetVelRH(float senFC, float senFL, float senFR, float senLF, float senLR, float senRF, float senRR);
+  void calcTargetVelRH(float senFC_dist, float senFL_dist, float senFR_dist, float senLF_dist, float senLR_dist, float senRF_dist, float senRR_dist);
   void calcTargetVelDR(Encoder *encl, Encoder *encr);
 
   float tarVelL, tarVelR;
