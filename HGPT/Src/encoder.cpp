@@ -23,3 +23,13 @@ int32_t Encoder::count(){
 
 	return count_;
 }
+float Encoder::deltaMm(){
+	static int32_t prev_encoder_count = 0;
+	int32_t encoder_count = count();
+	float delta_mm = (float)(encoder_count - prev_encoder_count)/512*(2*3.1415)*13.5;
+
+	// update previous encoder count
+	prev_encoder_count = encoder_count;
+
+	return delta_mm;
+}
