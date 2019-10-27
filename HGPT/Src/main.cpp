@@ -26,7 +26,8 @@
 #include "led.hpp"
 #include "motor.hpp"
 #include "encoder.hpp"
-#include "xprintf.h"
+#include"xprintf.h"
+#include "mux.hpp"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -36,6 +37,16 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define VL53L0X_Address    0x52
+#define VL53L0X_REG_IDENTIFICATION_MODEL_ID         0xc0
+#define VL53L0X_REG_IDENTIFICATION_REVISION_ID      0xc2
+#define VL53L0X_REG_PRE_RANGE_CONFIG_VCSEL_PERIOD   0x50
+#define VL53L0X_REG_FINAL_RANGE_CONFIG_VCSEL_PERIOD 0x70
+#define VL53L0X_REG_SYSRANGE_START                  0x00
+#define VL53L0X_REG_RESULT_INTERRUPT_STATUS         0x13
+#define VL53L0X_REG_RESULT_RANGE_STATUS             0x14
+#define	SYSTEM_INTERMEASUREMENT_PERIOD  0x04
+
 
 /* USER CODE END PD */
 
@@ -56,6 +67,117 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 
+//vl53l0x function
+uint8_t buf[16];
+
+
+uint16_t VL53L0X_decode_vcsel_period(short vcsel_period_reg) {
+  uint16_t vcsel_period_pclks = (vcsel_period_reg + 1) << 1;
+  return vcsel_period_pclks;
+}
+
+uint16_t convuint16(int lsb, int msb) {
+    return ((msb & 0xFF) << 8) | (lsb & 0xFF);
+}
+
+void write_byte_data_at(uint8_t reg, uint8_t data) {
+     uint8_t val[1];
+     val[0]=data;
+     HAL_I2C_Mem_Write(&hi2c1, VL53L0X_Address, reg, I2C_MEMADD_SIZE_8BIT, val, 1, 1000);
+}
+
+void write_32Bit_data_at(uint8_t reg, uint32_t data) {
+     uint8_t val[4];
+     val[0]=((data>>24)&0xFF);
+     val[1]=((data>>16)&0xFF);
+     val[2]=((data>>8)&0xFF);
+     val[3]=data&0xFF;
+     HAL_I2C_Mem_Write(&hi2c1, VL53L0X_Address, reg, I2C_MEMADD_SIZE_8BIT, val, 4, 1000);
+}
+
+uint8_t read_byte_data_at(uint8_t reg) {
+    uint8_t value;
+    HAL_I2C_Mem_Read(&hi2c1, VL53L0X_Address, reg, I2C_MEMADD_SIZE_8BIT, &value, 1, 1000);
+  return value;
+}
+
+void read_block_data_at(uint8_t reg, int sz) {
+    HAL_I2C_Mem_Read(&hi2c1, VL53L0X_Address, reg, I2C_MEMADD_SIZE_8BIT, buf, sz, 1000);
+}
+
+
+
+void Vl53L0X_Test(void){
+
+    uint8_t val1 ;
+//CHKÅ@Param
+      val1 = read_byte_data_at(VL53L0X_REG_IDENTIFICATION_REVISION_ID);
+      xprintf("Revision ID: %d, ",val1);
+
+      val1 = read_byte_data_at(VL53L0X_REG_IDENTIFICATION_MODEL_ID);
+      xprintf("Device ID:  %d \n",val1);
+
+      val1 = read_byte_data_at(VL53L0X_REG_PRE_RANGE_CONFIG_VCSEL_PERIOD);
+     xprintf("PRE_RANGE_CONFIG_VCSEL_PERIOD: %d \n",val1);
+      xprintf(" decode:   %d \n",VL53L0X_decode_vcsel_period(val1));
+
+      val1 = read_byte_data_at(VL53L0X_REG_FINAL_RANGE_CONFIG_VCSEL_PERIOD);
+//      xprintf("FINAL_RANGE_CONFIG_VCSEL_PERIOD: %d \n",val1);
+//      xprintf(" decode:   %d \n",VL53L0X_decode_vcsel_period(val1));
+
+//Init Start
+      write_32Bit_data_at(SYSTEM_INTERMEASUREMENT_PERIOD,20);
+      write_byte_data_at(VL53L0X_REG_SYSRANGE_START, 0x04);
+
+      uint8_t val = 0;
+      int cnt = 0;
+      while (cnt < 100) { // 1 second waiting time max
+          HAL_Delay(10);
+        val = read_byte_data_at(VL53L0X_REG_RESULT_RANGE_STATUS);
+        if (val & 0x01) break;
+        cnt++;
+      }
+    //  if (val & 0x01) xprintf("Ready!! \n"); else xprintf("Not Ready!!");
+
+      read_block_data_at(0x14, 12);
+      uint16_t acnt = convuint16(buf[7], buf[6]);
+      uint16_t scnt = convuint16(buf[9], buf[8]);
+      uint16_t dist = convuint16(buf[11], buf[10]);
+      uint8_t DeviceRangeStatusInternal = ((buf[0] & 0x78) >> 3);
+     // xprintf("ambient count: %d, signal count: %d, distance: %d, status: %d  \n",
+      //        acnt,scnt,dist,DeviceRangeStatusInternal);
+   xprintf("RES: %dÅ@mm  \n",dist);
+
+}
+
+int VL53L0X_read()
+{
+	while(1)
+	{		HAL_Delay(1);
+
+		uint8_t val = read_byte_data_at(VL53L0X_REG_RESULT_RANGE_STATUS);
+    	if (val & 0x01) break;
+	}
+    read_block_data_at(0x14, 12);
+
+	return       convuint16(buf[11], buf[10]);
+
+}
+uint8_t VL53L0X_Address_Test(void){
+
+     uint8_t tmp[2];
+     HAL_I2C_Mem_Read(&hi2c1, VL53L0X_Address, 0xC1, I2C_MEMADD_SIZE_8BIT, tmp, 1, 100);
+
+     if(tmp[0]==0xAA){
+        xprintf("VL53L0X is Found! \n");
+         return true;
+     }
+     else{
+      xprintf("VL53L0X is NOT Found! ERROR! \n");
+         return false;
+     }
+
+}
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -107,8 +229,8 @@ void uart_puts(char *str){
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  // Initialize xprintf
-  xdev_out(uart_putc);
+ xdev_out(uart_putc);
+
   /* USER CODE END 1 */
   
 
@@ -137,31 +259,29 @@ int main(void)
   MX_USART2_UART_Init();
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_TIM_Base_Start_IT(&htim7);
   // Start left motor
   mtrl.start();
   mtrl.setPWMDuty(0);
+
 
   // Start right motor
   mtrr.start();
   mtrr.setPWMDuty(0);
 
-  // Start timer interrupt
-  HAL_TIM_Base_Start_IT(&htim7);
-
-  // Set status to ready
-  ready = true;
-
-  // Notify initialization is complete
+  // Start Encorder
+  encl.start();
+  encr.start();
+//  VL53L0X_Address_Test();
+// Vl53L0X_Test();
   xprintf("Initialization complete\n");
-
+  ready=true;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   }
@@ -450,7 +570,7 @@ static void MX_TIM7_Init(void)
   htim7.Init.Prescaler = 899;
   htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim7.Init.Period = 999;
-  htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim7) != HAL_OK)
   {
     Error_Handler();
@@ -462,11 +582,9 @@ static void MX_TIM7_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN TIM7_Init 2 */
-
   /* USER CODE END TIM7_Init 2 */
 
 }
-
 /**
   * @brief USART2 Initialization Function
   * @param None
@@ -557,26 +675,52 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
 void Process_100Hz(){
   static float direction = 1;
   static float duty = 0;
+  static int count=0;
+  static int dist=0; //mm
+
   if(ready){
 	  // Set new duty
 	  if(duty>0.2) direction = -1;
 	  if(duty<-0.2) direction = 1;
 	  duty += direction*0.002;
-
+	  int32_t rotl=encl.count();
+	  int32_t rotr=encr.count();
+	  dist=rotl*27*3.14*11/46/512;	//R=27 /4 magic number
 	  // Run left motor
-	  mtrl.setPWMDuty(duty);
 
+	 // uint16_t dist=VL53L0X_read();
+	//  xprintf("RES: %dÅ@mm  \n",dist);
 	  // Toggle LED
-	  if(duty>=0){
-		  led.on();
-	  }else{
-		  led.off();
+	  if(dist>3000){
+	  		  led.off();
+	  		  duty=0;
+	  	  }else{
+	  		  duty=0.5;
+
+	  	  if(count%50)
+	  	  {
+		  	  led.off();
+	  	  }else
+	  	  {
+		  	  led.on();
+	  	  }
 	  }
+	  ++count;
+
+	  mtrl.setPWMDuty(-duty);
+	  mtrr.setPWMDuty(duty);
+	  xprintf("rot,dist=");
+	  xprintf("%d,%d\n",rotl,dist);
+
   }
+
 }
+
+
 /* USER CODE END 4 */
 
 /**

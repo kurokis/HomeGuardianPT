@@ -12,4 +12,5 @@ public:
 	};
 	void on();
 	void off();
+	void toggle();
 };
