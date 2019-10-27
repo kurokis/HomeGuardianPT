@@ -687,12 +687,15 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 void Process_100Hz(){
-  static float direction = 1;
+  /*
+   static float direction = 1;
   static float duty = 0;
   static int count=0;
   static int dist=0; //mm
+  */
 
   if(ready){
+	  /*
 	  // Set new duty
 	  if(duty>0.2) direction = -1;
 	  if(duty<-0.2) direction = 1;
@@ -725,8 +728,14 @@ void Process_100Hz(){
 	  mtrr.setPWMDuty(duty);
 	  xprintf("rot,dist=");
 	  xprintf("%d,%d\n",rotl,dist);
+	  */
+
 
 	  algo->calcTargetVelDR(&encl, &encr);
+
+	  float k = 0.001; // scale factor: target velocity -> duty
+	  mtrl.setPWMDuty(-k*algo->tarVelL);
+	  mtrr.setPWMDuty(k*algo->tarVelR);
 	  //motLF->setTargetVel(clientID, algo->tarVelL);
 	  //motLR->setTargetVel(clientID, algo->tarVelL);
 	  //motRF->setTargetVel(clientID, algo->tarVelR);
