@@ -28,6 +28,7 @@
 #include "encoder.hpp"
 #include"xprintf.h"
 #include "mux.hpp"
+#include "sensor.hpp"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -37,6 +38,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+/*
 #define VL53L0X_Address    0x52
 #define VL53L0X_REG_IDENTIFICATION_MODEL_ID         0xc0
 #define VL53L0X_REG_IDENTIFICATION_REVISION_ID      0xc2
@@ -46,7 +48,7 @@
 #define VL53L0X_REG_RESULT_INTERRUPT_STATUS         0x13
 #define VL53L0X_REG_RESULT_RANGE_STATUS             0x14
 #define	SYSTEM_INTERMEASUREMENT_PERIOD  0x04
-
+*/
 
 /* USER CODE END PD */
 
@@ -66,7 +68,7 @@ TIM_HandleTypeDef htim7;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+/*
 //vl53l0x function
 uint8_t buf[16];
 
@@ -79,6 +81,7 @@ uint16_t VL53L0X_decode_vcsel_period(short vcsel_period_reg) {
 uint16_t convuint16(int lsb, int msb) {
     return ((msb & 0xFF) << 8) | (lsb & 0xFF);
 }
+
 
 void write_byte_data_at(uint8_t reg, uint8_t data) {
      uint8_t val[1];
@@ -182,6 +185,7 @@ uint8_t VL53L0X_Address_Test(void){
      }
 
 }
+*/
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -204,7 +208,8 @@ Motor mtrl(&htim1, TIM_CHANNEL_1, GPIOC, GPIO_PIN_6, GPIOC, GPIO_PIN_7, GPIOC, G
 Motor mtrr(&htim1, TIM_CHANNEL_2, GPIOC, GPIO_PIN_8, GPIOC, GPIO_PIN_9, GPIOC, GPIO_PIN_2);
 Encoder encl(&htim2, TIM_CHANNEL_ALL, TIM2);
 Encoder encr(&htim3, TIM_CHANNEL_ALL, TIM3);
-mux myMux;
+mux myMux(GPIOC, GPIO_PIN_5, GPIOB, GPIO_PIN_13, GPIOB, GPIO_PIN_14, GPIOB, GPIO_PIN_15);
+Sensor senLR(&hi2c1, &myMux, 0);
 bool ready = false;
 
 // Function definitions for xprintf
@@ -279,6 +284,10 @@ int main(void)
   encr.start();
 //  VL53L0X_Address_Test();
 // Vl53L0X_Test();
+
+  // Initialize mux
+  myMux.init();
+
   xprintf("Initialization complete\n");
   ready=true;
   /* USER CODE END 2 */
@@ -287,13 +296,16 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	 uint16_t dist[7];
     /* USER CODE BEGIN 3 */
+	 /*
+	 uint16_t dist[7];
 	 void get_all_VL53L0X_value(dist,7)
 	 for(int i=0;i<7;++i)
 	 {
 		 xprintf("dist[0]=%d,dist[1]=%d,dist[2]",dist[0]);
-	 }
+	 }*/
+	  uint16_t dist = senLR.readSingleMeasurement();
+	  xprintf("dist=%d\n",dist);
   }
   /* USER CODE END 3 */
 }
@@ -685,6 +697,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+/*
 void get_all_VL53L0X_value(uint16_t dist[7],int sensor_num=7)
 {
 	// sending msg to measure distance
@@ -728,6 +741,7 @@ void get_all_VL53L0X_value(uint16_t dist[7],int sensor_num=7)
 
 
 }
+*/
 
 void Process_100Hz(){
   const int sensor_num=7;
