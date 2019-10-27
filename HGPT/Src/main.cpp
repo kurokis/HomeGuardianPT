@@ -624,8 +624,17 @@ void Process_100Hz(){
 	  xprintf("%d,%d\n",rotl,dist);
 	  */
 
+	  float lr = (float)senLR.readSingleMeasurement();
+	  float lf = (float)senLF.readSingleMeasurement();
+	  float fl = (float)senFL.readSingleMeasurement();
+	  float fc = (float)senFC.readSingleMeasurement();
+	  float fr = (float)senFR.readSingleMeasurement();
+	  float rf = (float)senRF.readSingleMeasurement();
+	  float rr = (float)senRR.readSingleMeasurement();
 
-	  algo->calcTargetVelDR(&encl, &encr);
+	  algo->calcTargetVelRH(fc,fl,fr,lf,lr,rf,rr);
+	  //algo->calcTargetVelDR(&encl, &encr);
+
 
 	  float k = 0.001; // scale factor: target velocity -> duty
 	  mtrl.setPWMDuty(-k*algo->tarVelL);
