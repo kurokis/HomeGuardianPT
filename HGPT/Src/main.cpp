@@ -127,7 +127,7 @@ void Vl53L0X_Test(void){
 
 //Init Start
       write_32Bit_data_at(SYSTEM_INTERMEASUREMENT_PERIOD,20);
-      write_byte_data_at(VL53L0X_REG_SYSRANGE_START, 0x04);
+      write_byte_data_at(VL53L0X_REG_SYSRANGE_START, 0x01);
 
       uint8_t val = 0;
       int cnt = 0;
@@ -152,6 +152,7 @@ void Vl53L0X_Test(void){
 
 int VL53L0X_read()
 {
+    write_byte_data_at(VL53L0X_REG_SYSRANGE_START, 0x01);
 	while(1)
 	{		HAL_Delay(1);
 
@@ -163,6 +164,9 @@ int VL53L0X_read()
 	return       convuint16(buf[11], buf[10]);
 
 }
+
+void get_all_VL53L0X_value(uint16_t dist[7],int sensor_num=7);
+
 uint8_t VL53L0X_Address_Test(void){
 
      uint8_t tmp[2];
@@ -200,6 +204,7 @@ Motor mtrl(&htim1, TIM_CHANNEL_1, GPIOC, GPIO_PIN_6, GPIOC, GPIO_PIN_7, GPIOC, G
 Motor mtrr(&htim1, TIM_CHANNEL_2, GPIOC, GPIO_PIN_8, GPIOC, GPIO_PIN_9, GPIOC, GPIO_PIN_2);
 Encoder encl(&htim2, TIM_CHANNEL_ALL, TIM2);
 Encoder encr(&htim3, TIM_CHANNEL_ALL, TIM3);
+mux myMux;
 bool ready = false;
 
 // Function definitions for xprintf
@@ -282,8 +287,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
+	 uint16_t dist[7];
     /* USER CODE BEGIN 3 */
+	 void get_all_VL53L0X_value(dist,7)
+	 for(int i=0;i<7;++i)
+	 {
+		 xprintf("dist[0]=%d,dist[1]=%d,dist[2]",dist[0]);
+	 }
   }
   /* USER CODE END 3 */
 }
@@ -675,14 +685,60 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void get_all_VL53L0X_value(uint16_t dist[7],int sensor_num=7)
+{
+	// sending msg to measure distance
+    for(int i=0;i<sensor_num;++i)
+    {
+      myMux.select_channel(i,&hi2c1);
+	  write_byte_data_at(VL53L0X_REG_SYSRANGE_START, 0x01);
+    }
+    bool isCorrect[7];
+    for(int i=0;i<7;++i)
+    {
+    	isCorrect[i]=false;
+
+    }
+    while(true)
+    {
+    for(int i=0;i<sensor_num;++i)
+    {
+    	if(!isCorrect[i])
+    	{
+    		uint8_t val;
+    		val = read_byte_data_at(VL53L0X_REG_RESULT_RANGE_STATUS);
+        	if (val & 0x01)
+        	{
+
+            	read_block_data_at(0x14, 12);
+            	uint16_t dist[i] = convuint16(buf[11], buf[10]);
+            	isCorrect[i]=true;
+        	}
+    	}
+
+    }
+    int sum=0;
+    for( int i=0;i<sensor_num;++i)
+    {
+    	sum+=isCorrect[i];
+    }
+    if(sum==0)
+    	break;
+    }
+
+
+}
 
 void Process_100Hz(){
+  const int sensor_num=7;
   static float direction = 1;
   static float duty = 0;
   static int count=0;
   static int dist=0; //mm
-
+  static uint16_t sensor_value[7];
   if(ready){
+	  //get sensor value
+
 	  // Set new duty
 	  if(duty>0.2) direction = -1;
 	  if(duty<-0.2) direction = 1;
