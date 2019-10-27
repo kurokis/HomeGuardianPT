@@ -18,4 +18,5 @@ public:
      };
      void start(); // Call this in USER CODE 2
      int32_t count();
+     float deltaMm(); // Difference since last call in millimeters
 };
