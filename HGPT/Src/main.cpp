@@ -637,8 +637,8 @@ void Process_100Hz(){
 
 
 	  float k = 0.002; // scale factor: target velocity -> duty
-	  mtrl.setPWMDuty(-k*algo->tarVelL);
-	  mtrr.setPWMDuty(k*algo->tarVelR);
+	  mtrl.setPWMDuty(k*algo->tarVelL);
+	  mtrr.setPWMDuty(-k*algo->tarVelR);
 	  //motLF->setTargetVel(clientID, algo->tarVelL);
 	  //motLR->setTargetVel(clientID, algo->tarVelL);
 	  //motRF->setTargetVel(clientID, algo->tarVelR);

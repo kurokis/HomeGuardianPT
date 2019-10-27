@@ -13,15 +13,16 @@
 
 void ALGO::calcTargetVelRH(float senFC_dist, float senFL_dist, float senFR_dist, float senLF_dist, float senLR_dist, float senRF_dist, float senRR_dist){
   float curvature, ratio;
-  const float thres = 440;
+  const float thres_high = 440;
+  const float thres_low = 20;
   bool senFC_res, senFL_res, senFR_res, senLF_res, senLR_res, senRF_res, senRR_res;
-  if(senFC_dist < thres){senFC_res = true;}else{senFC_res = false;}
-  if(senFL_dist < thres){senFL_res = true;}else{senFL_res = false;}
-  if(senFR_dist < thres){senFR_res = true;}else{senFR_res = false;}
-  if(senLF_dist < thres){senLF_res = true;}else{senLF_res = false;}
-  if(senLR_dist < thres){senLR_res = true;}else{senLR_res = false;}
-  if(senRF_dist < thres){senRF_res = true;}else{senRF_res = false;}
-  if(senRR_dist < thres){senRR_res = true;}else{senRR_res = false;}
+  if((senFC_dist < thres_high) && (senFC_dist > thres_low)){senFC_res = true;}else{senFC_res = false;}
+  if((senFL_dist < thres_high) && (senFL_dist > thres_low)){senFL_res = true;}else{senFL_res = false;}
+  if((senFR_dist < thres_high) && (senFR_dist > thres_low)){senFR_res = true;}else{senFR_res = false;}
+  if((senLF_dist < thres_high) && (senLF_dist > thres_low)){senLF_res = true;}else{senLF_res = false;}
+  if((senLR_dist < thres_high) && (senLR_dist > thres_low)){senLR_res = true;}else{senLR_res = false;}
+  if((senRF_dist < thres_high) && (senRF_dist > thres_low)){senRF_res = true;}else{senRF_res = false;}
+  if((senRR_dist < thres_high) && (senRR_dist > thres_low)){senRR_res = true;}else{senRR_res = false;}
 
   //curvature is positive when turning right
   if (!senRF_res)
