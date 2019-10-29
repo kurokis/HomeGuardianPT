@@ -636,7 +636,7 @@ void Process_100Hz(){
 	  //algo->calcTargetVelDR(&encl, &encr);
 
 
-	  float k = 0.002; // scale factor: target velocity -> duty
+	  float k = 0.0005; // scale factor: target velocity -> duty
 	  float motTarVelL = algo->tarVelL * (46/11); // Compensate for gear ratio
 	  float motTarVelR = algo->tarVelR * (46/11); // Compensate for gear ratio
 	  mtrl.setPWMDuty(k*motTarVelL);
