@@ -114,8 +114,8 @@ void ALGO::calcTargetVelDR(Encoder *encl, Encoder *encr){
   float OdoL = WHEEL_R * (diffOdoLF + diffOdoLR) / 2;
   float OdoR = WHEEL_R * (diffOdoRF + diffOdoRR) / 2;*/
 
-  float OdoL = encl->deltaMm();
-  float OdoR = encr->deltaMm();
+  float OdoL = 0.001*encl->deltaMm(); // Difference since last call. mm -> m
+  float OdoR = 0.001*encr->deltaMm(); // Difference since last call. mm -> m
 
   float R = 0.0;
   int curv;

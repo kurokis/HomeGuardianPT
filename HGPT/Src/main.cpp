@@ -624,13 +624,13 @@ void Process_100Hz(){
 	  xprintf("%d,%d\n",rotl,dist);
 	  */
 
-	  float lr = (float)senLR.readSingleMeasurement();
-	  float lf = (float)senLF.readSingleMeasurement();
-	  float fl = (float)senFL.readSingleMeasurement();
-	  float fc = (float)senFC.readSingleMeasurement();
-	  float fr = (float)senFR.readSingleMeasurement();
-	  float rf = (float)senRF.readSingleMeasurement();
-	  float rr = (float)senRR.readSingleMeasurement();
+	  float lr = 0.001*(float)senLR.readSingleMeasurement(); // mm -> m
+	  float lf = 0.001*(float)senLF.readSingleMeasurement(); // mm -> m
+	  float fl = 0.001*(float)senFL.readSingleMeasurement(); // mm -> m
+	  float fc = 0.001*(float)senFC.readSingleMeasurement(); // mm -> m
+	  float fr = 0.001*(float)senFR.readSingleMeasurement(); // mm -> m
+	  float rf = 0.001*(float)senRF.readSingleMeasurement(); // mm -> m
+	  float rr = 0.001*(float)senRR.readSingleMeasurement(); // mm -> m
 
 	  algo->calcTargetVelRH(fc,fl,fr,lf,lr,rf,rr);
 	  //algo->calcTargetVelDR(&encl, &encr);
