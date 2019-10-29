@@ -26,7 +26,10 @@ int32_t Encoder::count(){
 float Encoder::deltaMm(){
 	static int32_t prev_encoder_count = 0;
 	int32_t encoder_count = count();
-	float delta_mm = (float)(encoder_count - prev_encoder_count)/512*(2*3.1415)*13.5;
+
+	// gear ratio: motor/wheel = 11/46
+	// wheel radius: 13.5 mm
+	float delta_mm = (float)(encoder_count - prev_encoder_count)/512*(11/46)*(2*3.1415)*13.5;
 
 	// update previous encoder count
 	prev_encoder_count = encoder_count;
