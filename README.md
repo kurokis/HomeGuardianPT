@@ -28,6 +28,7 @@ System Wake-Up 0
 
 - Combined Channels: Encoder Mode
 - Counter Period: 65535
+- Encoder Mode: Encoder Mode TI1 and TI2
 
 **TIM7**
 
@@ -35,6 +36,7 @@ System Wake-Up 0
 - TIM7 global interrupt: Enabled
 - Prescaler (PSC - 16 bits value): 899
 - Counter Period: 999
+- auto-reload preload: Enable
 
 **I2C1**
 
@@ -42,6 +44,7 @@ System Wake-Up 0
 
 **USART2**
 
+- Mode: Asynchronous
 - Baud Rate: 115200
 
 **GPIO**
@@ -76,6 +79,7 @@ HCLKが180MHzとなるように設定
 
 - PLLM: /8
 - PLLN: x180
+- System Clock Mux: PLLCLK
 - APB1 Prescaler: /4
 - APB2 Prescaler: /4
 
