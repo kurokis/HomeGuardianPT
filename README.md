@@ -2,7 +2,7 @@
 
 ## CubeMXの設定
 
-- ACCESS to MCU Selector
+- ACCESS TO MCU SELECTOR
 - STM32F446REを選択
 - Start Projectをクリック
 
@@ -120,4 +120,8 @@ CubeMXはCでコードを生成するので、SW4STM32にてC++に変換する�
  - Project ExplorerでHGPTを右クリックし、Clean Projectを実行
  - Project ExplorerでHGPTを右クリックし、Convert to C++を実行
  - main.cをmain.cppに変換
+
+ 
+まず空のプロジェクトを作成してGenerate Code、SW4STM32で書き込み。
+次にピン設定してGenerate Code、C++に変換して書き込み。
  
