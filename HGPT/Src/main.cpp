@@ -92,6 +92,13 @@ Sensor senRF(&hi2c1, &myMux, 5);
 Sensor senFR(&hi2c1, &myMux, 6);
 ALGO *algo;
 TRANS *trans;
+uint16_t lr; // measurement in mm
+uint16_t lf; // measurement in mm
+uint16_t fl; // measurement in mm
+uint16_t fc; // measurement in mm
+uint16_t fr; // measurement in mm
+uint16_t rf; // measurement in mm
+uint16_t rr; // measurement in mm
 bool ready = false;
 
 // Function definitions for xprintf
@@ -171,12 +178,34 @@ int main(void)
   // Initialize mux
   myMux.init();
 
-  // VL53L0X_Address_Test();
-  // Vl53L0X_Test();
+  // Initialize sensors
+  uint32_t delay_ms = 5;
+  senLR.requestSingleMeasurement();
+  HAL_Delay(delay_ms);
+  senLF.requestSingleMeasurement();
+  HAL_Delay(delay_ms);
+  senFL.requestSingleMeasurement();
+  HAL_Delay(delay_ms);
+  senFC.requestSingleMeasurement();
+  HAL_Delay(delay_ms);
+  senFR.requestSingleMeasurement();
+  HAL_Delay(delay_ms);
+  senRF.requestSingleMeasurement();
+  HAL_Delay(delay_ms);
+  senRR.requestSingleMeasurement();
+  HAL_Delay(delay_ms);
 
   // Start algorithm and transition
   trans->init();
   algo->init();
+
+  // Blink LED to notify initialization complete
+  for(int i=0;i<4;i++){
+    led.on();
+    HAL_Delay(50);
+    led.off();
+    HAL_Delay(50);
+  }
 
   xprintf("Initialization complete\n");
   ready=true;
@@ -188,6 +217,57 @@ int main(void)
   {
 
     /* USER CODE BEGIN 3 */
+	// Read sensors
+	uint32_t delay_ms = 2;
+	lr = senLR.readSingleMeasurement(); // mm -> m
+	HAL_Delay(delay_ms);
+	lf = senLF.readSingleMeasurement(); // mm -> m
+	HAL_Delay(delay_ms);
+	fc = senFC.readSingleMeasurement(); // mm -> m
+	HAL_Delay(delay_ms);
+	fl = senFL.readSingleMeasurement(); // mm -> m
+	HAL_Delay(delay_ms);
+	fr = senFR.readSingleMeasurement(); // mm -> m
+	HAL_Delay(delay_ms);
+	rf = senRF.readSingleMeasurement(); // mm -> m
+	HAL_Delay(delay_ms);
+	rr = senRR.readSingleMeasurement(); // mm -> m
+	HAL_Delay(delay_ms);
+
+	// Blink LED
+	if((rf>100 && rf<300) || (fc>100 && fc<300)){
+		//blink once
+		for(int i=0;i<1;i++){
+			led.on();
+			HAL_Delay(5);
+			led.off();
+			HAL_Delay(5);
+		}
+	}
+
+	// Run motor
+	float k = 0.0005; // scale factor: target velocity -> duty
+	//float motTarVelL = algo->tarVelL * (46/11); // Compensate for gear ratio
+	//float motTarVelR = algo->tarVelR * (46/11); // Compensate for gear ratio
+	float motTarVelL = 20*(46/11);
+	float motTarVelR = 20*(46/11);
+	if(fc>100 && fc<300){
+		motTarVelL = 0;
+		motTarVelR = 0;
+	}
+	else{
+		if(rf>100 && rf<200){
+			motTarVelL -= 50;
+			motTarVelR += 50;
+		}else{
+			if(rf>100 && rf>200){
+				motTarVelL += 50;
+				motTarVelR -= 50;
+			}
+		}
+	}
+	mtrl.setPWMDuty(-k*motTarVelL);
+	mtrr.setPWMDuty(k*motTarVelR);
   }
   /* USER CODE END 3 */
 }
@@ -624,6 +704,7 @@ void Process_100Hz(){
 	  xprintf("%d,%d\n",rotl,dist);
 	  */
 
+	  /*
 	  float lr = 0.001*(float)senLR.readSingleMeasurement(); // mm -> m
 	  float lf = 0.001*(float)senLF.readSingleMeasurement(); // mm -> m
 	  float fl = 0.001*(float)senFL.readSingleMeasurement(); // mm -> m
@@ -646,6 +727,7 @@ void Process_100Hz(){
 	  //motRF->setTargetVel(clientID, algo->tarVelR);
 	  //motRR->setTargetVel(clientID, algo->tarVelR);
 	  trans->takeTrans(algo->pos[0], algo->pos[1], algo);
+	  */
   }
 
 }
