@@ -28,7 +28,7 @@ void ALGO::calcTargetVelRH(float senFC_dist, float senFL_dist, float senFR_dist,
   static float dFact, prevDFact, d2Fact;
   bool option1 = true;
   if (!senRF_res){
-    curvature = 9;
+    curvature = 8;
   }else{
 	if(option1==false){
 		curvature = (senRF_dist - senRR_dist) * 40.0 + ((senRF_dist + senRR_dist)-0.35) * 15.0;
@@ -45,7 +45,7 @@ void ALGO::calcTargetVelRH(float senFC_dist, float senFL_dist, float senFR_dist,
 		d2Fact = dFact - prevDFact;
 		float d2 = d2Fact * 900.0;
 		float d = dFact * 3000.0;
-		float p = ((senRF_dist + senRR_dist) - 0.4) * 25.0;
+		float p = ((senRF_dist + senRR_dist) - 0.3) * 25.0;
 		curvature = p + d + d2;
         
         float curvature_limit = 6;
