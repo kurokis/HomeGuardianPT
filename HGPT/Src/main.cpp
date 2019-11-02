@@ -295,7 +295,7 @@ int main(void)
 	float motTarVelR = algo->tarVelR * (46/11); // Compensate for gear ratio
 	
 	// Run motor
-	float k = 0.0005; // scale factor: target velocity -> duty
+	float k = 0.00047; // scale factor: target velocity -> duty
 	mtrl.setPWMDuty(-k*motTarVelL);
 	mtrr.setPWMDuty(k*motTarVelR);
 	
