@@ -272,7 +272,6 @@ int main(void)
 	// Blink LED
 	static int i_blink=0;
 	if((rf>100 && rf<300) || (fc>20 && fc<150)){
-		//blink once
 		if(i_blink==10){
 			led.toggle();
 			i_blink=0;
@@ -303,33 +302,30 @@ int main(void)
 	*/
 	
 	// Control logic (switch algorithms)
-	if(sw1){
-		led.on();
-		if(sw2){
+	if(sw2){
+		if(sw1){
 			algo->calcTargetVelRH(fcm,flm,frm,lfm,lrm,rfm,rrm);
 		}else{
 			algo->calcTargetVelRH(fcm,flm,frm,lfm,lrm,rfm,rrm);
 		}
 	}else{
-		led.off();
-		if(sw2){
+		if(sw1){
 			algo->calcTargetVelDR(&encl, &encr);
 		}else{
 			algo->calcTargetVelDR(&encl, &encr);
 		}
+		// State transition for dead reckoning
+		trans->takeTrans(algo->pos[0], algo->pos[1], algo);
 	}
 
-	//algo->calcTargetVelDR(&encl, &encr);
+	// Convert wheel speed to motor speed
 	float motTarVelL = algo->tarVelL * (46/11); // Compensate for gear ratio
 	float motTarVelR = algo->tarVelR * (46/11); // Compensate for gear ratio
-	
-	// Run motor
+
+	// Set duty
 	float k = 0.00047; // scale factor: target velocity -> duty
 	mtrl.setPWMDuty(-k*motTarVelL);
 	mtrr.setPWMDuty(k*motTarVelR);
-	
-	// State transition for dead reckoning
-	//trans->takeTrans(algo->pos[0], algo->pos[1], algo);
   }
   /* USER CODE END 3 */
 }
