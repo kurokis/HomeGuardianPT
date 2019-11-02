@@ -92,13 +92,20 @@ Sensor senRF(&hi2c1, &myMux, 5);
 Sensor senFR(&hi2c1, &myMux, 6);
 ALGO *algo;
 TRANS *trans;
-uint16_t lr; // measurement in mm
-uint16_t lf; // measurement in mm
-uint16_t fl; // measurement in mm
-uint16_t fc; // measurement in mm
-uint16_t fr; // measurement in mm
-uint16_t rf; // measurement in mm
-uint16_t rr; // measurement in mm
+uint16_t lr = 0; // measurement in mm
+uint16_t lf = 0; // measurement in mm
+uint16_t fl = 0; // measurement in mm
+uint16_t fc = 0; // measurement in mm
+uint16_t fr = 0; // measurement in mm
+uint16_t rf = 0; // measurement in mm
+uint16_t rr = 0; // measurement in mm
+float lrm = 0; // measurement in m
+float lfm = 0; // measurement in m
+float flm = 0; // measurement in m
+float fcm = 0; // measurement in m
+float frm = 0; // measurement in m
+float rfm = 0; // measurement in m
+float rrm = 0; // measurement in m
 bool ready = false;
 
 // Function definitions for xprintf
@@ -219,39 +226,52 @@ int main(void)
     /* USER CODE BEGIN 3 */
 	// Read sensors
 	uint32_t delay_ms = 2;
-	lr = senLR.readSingleMeasurement(); // mm -> m
+
+	lr = senLR.readSingleMeasurement(); // mm
+	lrm = 0.001 * lr; // m
 	HAL_Delay(delay_ms);
-	lf = senLF.readSingleMeasurement(); // mm -> m
+
+	lf = senLF.readSingleMeasurement(); // mm
+	lfm = 0.001 * lf; // m
 	HAL_Delay(delay_ms);
-	fc = senFC.readSingleMeasurement(); // mm -> m
+
+	fc = senFC.readSingleMeasurement(); // mm
+	fcm = 0.001 * fc; // m
 	HAL_Delay(delay_ms);
-	fl = senFL.readSingleMeasurement(); // mm -> m
+
+	fl = senFL.readSingleMeasurement(); // mm
+	flm = 0.001 * fl; // m
 	HAL_Delay(delay_ms);
-	fr = senFR.readSingleMeasurement(); // mm -> m
+
+	fr = senFR.readSingleMeasurement(); // mm
+	frm = 0.001 * fr; // m
 	HAL_Delay(delay_ms);
-	rf = senRF.readSingleMeasurement(); // mm -> m
+
+	rf = senRF.readSingleMeasurement(); // mm
+	rfm = 0.001 * rf; // m
 	HAL_Delay(delay_ms);
-	rr = senRR.readSingleMeasurement(); // mm -> m
+
+	rr = senRR.readSingleMeasurement(); // mm
+	rrm = 0.001 * rr; // m
 	HAL_Delay(delay_ms);
 
 	// Blink LED
-	if((rf>100 && rf<300) || (fc>100 && fc<300)){
+	static int i_blink=0;
+	if((rf>100 && rf<300) || (fc>20 && fc<150)){
 		//blink once
-		for(int i=0;i<1;i++){
-			led.on();
-			HAL_Delay(5);
-			led.off();
-			HAL_Delay(5);
+		if(i_blink==10){
+			led.toggle();
+			i_blink=0;
+		}else{
+			i_blink++;
 		}
 	}
 
-	// Run motor
-	float k = 0.0005; // scale factor: target velocity -> duty
-	//float motTarVelL = algo->tarVelL * (46/11); // Compensate for gear ratio
-	//float motTarVelR = algo->tarVelR * (46/11); // Compensate for gear ratio
-	float motTarVelL = 20*(46/11);
-	float motTarVelR = 20*(46/11);
-	if(fc>100 && fc<300){
+	/*
+	// Simple control logic
+	float motTarVelL = 20*46/11;
+	float motTarVelR = 20*46/11;
+	if(fc>20 && fc<150){
 		motTarVelL = 0;
 		motTarVelR = 0;
 	}
@@ -266,8 +286,21 @@ int main(void)
 			}
 		}
 	}
+	*/
+	
+	// Control logic
+	algo->calcTargetVelRH(fcm,flm,frm,lfm,lrm,rfm,rrm);
+	//algo->calcTargetVelDR(&encl, &encr);
+	float motTarVelL = algo->tarVelL * (46/11); // Compensate for gear ratio
+	float motTarVelR = algo->tarVelR * (46/11); // Compensate for gear ratio
+	
+	// Run motor
+	float k = 0.0005; // scale factor: target velocity -> duty
 	mtrl.setPWMDuty(-k*motTarVelL);
 	mtrr.setPWMDuty(k*motTarVelR);
+	
+	// State transition for dead reckoning
+	//trans->takeTrans(algo->pos[0], algo->pos[1], algo);
   }
   /* USER CODE END 3 */
 }
