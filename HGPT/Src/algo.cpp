@@ -13,8 +13,8 @@
 
 void ALGO::calcTargetVelRH(float senFC_dist, float senFL_dist, float senFR_dist, float senLF_dist, float senLR_dist, float senRF_dist, float senRR_dist){
   float curvature, ratio;
-  const float thres_high = 440;
-  const float thres_low = 20;
+  const float thres_high = 0.5;
+  const float thres_low = 0.02;
   bool senFC_res, senFL_res, senFR_res, senLF_res, senLR_res, senRF_res, senRR_res;
   if((senFC_dist < thres_high) && (senFC_dist > thres_low)){senFC_res = true;}else{senFC_res = false;}
   if((senFL_dist < thres_high) && (senFL_dist > thres_low)){senFL_res = true;}else{senFL_res = false;}
