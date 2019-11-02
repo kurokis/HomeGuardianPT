@@ -224,6 +224,20 @@ int main(void)
   {
 
     /* USER CODE BEGIN 3 */
+	// Read switch
+	bool sw1;
+	if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0) == 1){
+		sw1 = true;
+	}else{
+		sw1 = false;
+	}
+	bool sw2;
+	if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_1) == 1){
+		sw2 = true;
+	}else{
+		sw2 = false;
+	}
+
 	// Read sensors
 	uint32_t delay_ms = 2;
 
@@ -288,8 +302,23 @@ int main(void)
 	}
 	*/
 	
-	// Control logic
-	algo->calcTargetVelRH(fcm,flm,frm,lfm,lrm,rfm,rrm);
+	// Control logic (switch algorithms)
+	if(sw1){
+		led.on();
+		if(sw2){
+			algo->calcTargetVelRH(fcm,flm,frm,lfm,lrm,rfm,rrm);
+		}else{
+			algo->calcTargetVelRH(fcm,flm,frm,lfm,lrm,rfm,rrm);
+		}
+	}else{
+		led.off();
+		if(sw2){
+			algo->calcTargetVelDR(&encl, &encr);
+		}else{
+			algo->calcTargetVelDR(&encl, &encr);
+		}
+	}
+
 	//algo->calcTargetVelDR(&encl, &encr);
 	float motTarVelL = algo->tarVelL * (46/11); // Compensate for gear ratio
 	float motTarVelR = algo->tarVelR * (46/11); // Compensate for gear ratio
