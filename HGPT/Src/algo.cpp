@@ -25,10 +25,36 @@ void ALGO::calcTargetVelRH(float senFC_dist, float senFL_dist, float senFR_dist,
   if((senRR_dist < thres_high) && (senRR_dist > thres_low)){senRR_res = true;}else{senRR_res = false;}
 
   //curvature is positive when turning right
-  if (!senRF_res)
+  static float dFact, prevDFact, d2Fact;
+  bool option1 = true;
+  if (!senRF_res){
     curvature = 4;
-  else
-    curvature = (senRF_dist - senRR_dist) * 40.0 + ((senRF_dist + senRR_dist)-0.35) * 15.0;
+  }else{
+	if(option1==false){
+		curvature = (senRF_dist - senRR_dist) * 40.0 + ((senRF_dist + senRR_dist)-0.35) * 15.0;
+	}else{
+
+		prevDFact = dFact;
+
+		if(senRF_dist > senRR_dist){
+			dFact = (senRF_dist - senRR_dist) * (senRF_dist - senRR_dist);
+		}
+		else{
+			dFact = - (senRF_dist - senRR_dist) * (senRF_dist - senRR_dist);
+		}
+		d2Fact = dFact - prevDFact;
+		float d2 = d2Fact * 300.0;
+		float d = dFact * 1100.0;
+		float p = ((senRF_dist + senRR_dist) - 0.25) * 8.0;
+		curvature = p + d + d2;
+		if(curvature > 4){
+			curvature = 4;
+		}else if(curvature < -4){
+			curvature = -4;
+		}
+
+	}
+  }
 
   //ratio = L/R
   if(curvature>0)

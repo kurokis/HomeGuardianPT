@@ -31,6 +31,13 @@ uint16_t Sensor::readSingleMeasurement(){
 		read_block_data_at(0x14, 12);
 		dist_ = convuint16(buf[11], buf[10]);
 
+		// Limit data range
+		uint16_t dist_candidate = convuint16(buf[11], buf[10]);
+		if(dist_candidate <= 20 || dist_candidate > 500){
+			dist_candidate = 500;
+		}
+		dist_ = dist_candidate;
+
 		// Request new data
 		requestSingleMeasurement();
 	}
