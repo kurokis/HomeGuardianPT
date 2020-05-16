@@ -1,5 +1,7 @@
 # Home Guardian PT
 
+![HGPT](https://github.com/kurokis/HomeGuardianPT/blob/master/img/hgpt.jpg)
+
 ## CubeMXの設定
 
 - ACCESS TO MCU SELECTOR
